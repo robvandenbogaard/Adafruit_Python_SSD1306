@@ -231,6 +231,70 @@ class SSD1306Base(object):
                 contrast = 0xCF
 
 
+class SSD1306_64_48(SSD1306Base):
+    def __init__(self, rst, dc=None, sclk=None, din=None, cs=None, gpio=None,
+                 spi=None, i2c_bus=None, i2c_address=SSD1306_I2C_ADDRESS,
+                 i2c=None):
+        # Call base class constructor.
+        super(SSD1306_64_48, self).__init__(64, 48, rst, dc, sclk, din, cs,
+                                             gpio, spi, i2c_bus, i2c_address, i2c)
+
+    def _initialize(self):
+        # 128x64 pixel specific initialization.
+        self.command(SSD1306_DISPLAYOFF)                    # 0xAE
+        self.command(SSD1306_SETDISPLAYCLOCKDIV)            # 0xD5
+        self.command(0x60)                                  # the suggested ratio 0x80
+        self.command(SSD1306_SETMULTIPLEX)                  # 0xA8
+        self.command(0x3F)
+        self.command(SSD1306_SETDISPLAYOFFSET)              # 0xD3
+        self.command(0x0)                                   # no offset
+        self.command(SSD1306_SETSTARTLINE | 0x0)            # line #0
+        self.command(SSD1306_CHARGEPUMP)                    # 0x8D
+        if self._vccstate == SSD1306_EXTERNALVCC:
+            self.command(0x10)
+        else:
+            self.command(0x14)
+        self.command(SSD1306_MEMORYMODE)                    # 0x20
+        self.command(0x00)                                  # 0x0 act like ks0108
+        self.command(SSD1306_SEGREMAP)
+        self.command(SSD1306_COMSCANINC)
+        self.command(SSD1306_SETCOMPINS)                    # 0xDA
+        self.command(0x12)
+        self.command(SSD1306_SETCONTRAST)                   # 0x81
+        if self._vccstate == SSD1306_EXTERNALVCC:
+            self.command(0x9F)
+        else:
+            self.command(0xCF)
+        self.command(SSD1306_SETPRECHARGE)                  # 0xd9
+        if self._vccstate == SSD1306_EXTERNALVCC:
+            self.command(0x22)
+        else:
+            self.command(0xF1)
+        self.command(SSD1306_SETVCOMDETECT)                 # 0xDB
+        self.command(0x40)
+        self.command(SSD1306_DISPLAYALLON_RESUME)           # 0xA4
+        self.command(SSD1306_NORMALDISPLAY)                 # 0xA6
+
+    def display(self):
+        """Write display buffer to physical display."""
+        self.command(SSD1306_COLUMNADDR)
+        self.command(32)              # Column start address. (0 = reset)
+        self.command(32+self.width-1)   # Column end address.
+        self.command(SSD1306_PAGEADDR)
+        self.command(0)              # Page start address. (0 = reset)
+        self.command(self._pages-1)  # Page end address.
+        # Write buffer data.
+        if self._spi is not None:
+            # Set DC high for data.
+            self._gpio.set_high(self._dc)
+            # Write buffer.
+            self._spi.write(self._buffer)
+        else:
+            for i in range(0, len(self._buffer), 16):
+                control = 0x40   # Co = 0, DC = 0
+                self._i2c.writeList(control, self._buffer[i:i+16])
+
+
 class SSD1306_128_64(SSD1306Base):
     def __init__(self, rst, dc=None, sclk=None, din=None, cs=None, gpio=None,
                  spi=None, i2c_bus=None, i2c_address=SSD1306_I2C_ADDRESS,

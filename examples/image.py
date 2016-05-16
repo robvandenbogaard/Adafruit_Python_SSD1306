@@ -27,7 +27,7 @@ from PIL import Image
 
 
 # Raspberry Pi pin configuration:
-RST = 24
+RST = 16
 # Note the following are only used with SPI:
 DC = 23
 SPI_PORT = 0
@@ -40,8 +40,11 @@ SPI_DEVICE = 0
 # SPI_PORT = 1
 # SPI_DEVICE = 0
 
+# 64x48 display with hardware I2C:
+disp = Adafruit_SSD1306.SSD1306_64_48(rst=RST)
+
 # 128x32 display with hardware I2C:
-disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
+#disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
 
 # 128x64 display with hardware I2C:
 # disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)

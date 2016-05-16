@@ -29,7 +29,7 @@ from PIL import ImageFont
 
 
 # Raspberry Pi pin configuration:
-RST = 24
+RST = 16
 # Note the following are only used with SPI:
 DC = 23
 SPI_PORT = 0
@@ -42,8 +42,11 @@ SPI_DEVICE = 0
 # SPI_PORT = 1
 # SPI_DEVICE = 0
 
+# 64x48 display with hardware I2C:
+disp = Adafruit_SSD1306.SSD1306_64_48(rst=RST)
+
 # 128x32 display with hardware I2C:
-disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
+#disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
 
 # 128x64 display with hardware I2C:
 # disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)
@@ -87,12 +90,12 @@ draw.rectangle((0,0,width,height), outline=0, fill=0)
 
 # Draw some shapes.
 # First define some constants to allow easy resizing of shapes.
-padding = 2
-shape_width = 20
+padding = 1
+shape_width = 15
 top = padding
-bottom = height-padding
+bottom = (height-padding)/2
 # Move left to right keeping track of the current x position for drawing shapes.
-x = padding
+x = 0
 # Draw an ellipse.
 draw.ellipse((x, top , x+shape_width, bottom), outline=255, fill=0)
 x += shape_width+padding
@@ -115,8 +118,8 @@ font = ImageFont.load_default()
 #font = ImageFont.truetype('Minecraftia.ttf', 8)
 
 # Write two lines of text.
-draw.text((x, top),    'Hello',  font=font, fill=255)
-draw.text((x, top+20), 'World!', font=font, fill=255)
+draw.text((0, 25+top),    'Hello',  font=font, fill=255)
+draw.text((0, 25+top+10), 'World!', font=font, fill=255)
 
 # Display image.
 disp.image(image)
